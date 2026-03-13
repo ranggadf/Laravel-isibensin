@@ -16,8 +16,17 @@ class WarungController extends Controller
     }
 
     // 2️⃣ Buat warung baru
-    public function store(Request $request)
+   public function store(Request $request)
 {
+    // cek apakah owner sudah punya warung
+    $existingWarung = Warung::where('user_id', $request->user()->id)->first();
+
+    if ($existingWarung) {
+        return response()->json([
+            'message' => 'Owner sudah memiliki warung'
+        ], 400);
+    }
+
     $request->validate([
         'nama_warung' => 'required',
         'alamat' => 'required',
@@ -30,7 +39,7 @@ class WarungController extends Controller
 
     $fotoPath = null;
 
-    // ✅ SIMPAN FILE KE STORAGE
+    // simpan file foto
     if ($request->hasFile('foto')) {
         $fotoPath = $request->file('foto')->store('warung', 'public');
     }
@@ -43,7 +52,7 @@ class WarungController extends Controller
         'longitude' => $request->longitude,
         'stok_pertalite' => $request->stok_pertalite,
         'stok_pertamax' => $request->stok_pertamax,
-        'foto' => $fotoPath // ✅ simpan path hasil store()
+        'foto' => $fotoPath
     ]);
 
     return response()->json([
@@ -62,7 +71,6 @@ class WarungController extends Controller
         ]
     ], 201);
 }
-
     // 3️⃣ Update warung
   public function update(Request $request)
 {

@@ -4,7 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WarungController;
-
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\PelangganController;
+use App\Http\Controllers\Admin\PemilikController;
+use App\Http\Controllers\Admin\PersebaranWarungController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES (Tidak Perlu Login)
@@ -13,6 +16,10 @@ use App\Http\Controllers\WarungController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+ // Admin Routes
+    Route::post('/admin/login', [AdminAuthController::class, 'login']);
+    Route::post('/admin/register', [AdminAuthController::class, 'register']);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -47,4 +54,27 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
+   
+});
+
+// Admin Routes - Pelanggan
+Route::prefix('admin')->group(function () {
+
+    Route::get('/pelanggan', [PelangganController::class, 'index']);
+    Route::post('/pelanggan', [PelangganController::class, 'store']);
+    Route::get('/pelanggan/{id}', [PelangganController::class, 'show']);
+    Route::put('/pelanggan/{id}', [PelangganController::class, 'update']);
+    Route::delete('/pelanggan/{id}', [PelangganController::class, 'destroy']);
+
+});
+
+
+// Admin Routes - Pemilik Warung
+Route::prefix('admin')->group(function () {
+    Route::apiResource('pemilik', PemilikController::class);
+});
+
+// Admin Routes - Persebaran Warung
+Route::prefix('admin')->group(function () {
+    Route::apiResource('persebaran', PersebaranWarungController::class);
 });
