@@ -14,6 +14,8 @@ class Warung extends Model
         'longitude',
         'stok_pertalite',
         'stok_pertamax',
+        'harga_pertalite',
+        'harga_pertamax',
         'foto'
     ];
 }

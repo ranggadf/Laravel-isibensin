@@ -34,6 +34,8 @@ class WarungController extends Controller
         'longitude' => 'required',
         'stok_pertalite' => 'required|numeric',
         'stok_pertamax' => 'required|numeric',
+        'harga_pertalite' => 'required|numeric',
+        'harga_pertamax' => 'required|numeric',
         'foto' => 'nullable|image'
     ]);
 
@@ -45,15 +47,17 @@ class WarungController extends Controller
     }
 
     $warung = Warung::create([
-        'user_id' => $request->user()->id,
-        'nama_warung' => $request->nama_warung,
-        'alamat' => $request->alamat,
-        'latitude' => $request->latitude,
-        'longitude' => $request->longitude,
-        'stok_pertalite' => $request->stok_pertalite,
-        'stok_pertamax' => $request->stok_pertamax,
-        'foto' => $fotoPath
-    ]);
+    'user_id' => $request->user()->id,
+    'nama_warung' => $request->nama_warung,
+    'alamat' => $request->alamat,
+    'latitude' => $request->latitude,
+    'longitude' => $request->longitude,
+    'stok_pertalite' => $request->stok_pertalite,
+    'stok_pertamax' => $request->stok_pertamax,
+    'harga_pertalite' => $request->harga_pertalite,
+    'harga_pertamax' => $request->harga_pertamax,
+    'foto' => $fotoPath
+]);
 
     return response()->json([
         'message' => 'Warung berhasil dibuat',
@@ -63,6 +67,8 @@ class WarungController extends Controller
             'alamat' => $warung->alamat,
             'stok_pertalite' => $warung->stok_pertalite,
             'stok_pertamax' => $warung->stok_pertamax,
+            'harga_pertalite' => $warung->harga_pertalite,
+            'harga_pertamax' => $warung->harga_pertamax,
             'latitude' => $warung->latitude,
             'longitude' => $warung->longitude,
             'foto' => $warung->foto
@@ -80,15 +86,17 @@ class WarungController extends Controller
         return response()->json(['message' => 'Warung tidak ditemukan'], 404);
     }
 
-    $request->validate([
-        'nama_warung' => 'required',
-        'alamat' => 'required',
-        'latitude' => 'required',
-        'longitude' => 'required',
-        'stok_pertalite' => 'required|numeric',
-        'stok_pertamax' => 'required|numeric',
-        'foto' => 'nullable|image'
-    ]);
+   $request->validate([
+    'nama_warung' => 'required',
+    'alamat' => 'required',
+    'latitude' => 'required',
+    'longitude' => 'required',
+    'stok_pertalite' => 'required|numeric',
+    'stok_pertamax' => 'required|numeric',
+    'harga_pertalite' => 'required|numeric',
+    'harga_pertamax' => 'required|numeric',
+    'foto' => 'nullable|image'
+]);
 
     // ✅ Update field biasa
     $warung->nama_warung = $request->nama_warung;
@@ -97,6 +105,8 @@ class WarungController extends Controller
     $warung->longitude = $request->longitude;
     $warung->stok_pertalite = $request->stok_pertalite;
     $warung->stok_pertamax = $request->stok_pertamax;
+    $warung->harga_pertalite = $request->harga_pertalite;
+    $warung->harga_pertamax = $request->harga_pertamax;
 
     // ✅ Jika ada foto baru
     if ($request->hasFile('foto')) {
@@ -121,6 +131,8 @@ class WarungController extends Controller
             'alamat' => $warung->alamat,
             'stok_pertalite' => $warung->stok_pertalite,
             'stok_pertamax' => $warung->stok_pertamax,
+            'harga_pertalite' => $warung->harga_pertalite,
+            'harga_pertamax' => $warung->harga_pertamax,
             'latitude' => $warung->latitude,
             'longitude' => $warung->longitude,
             'foto' => $warung->foto 
@@ -149,4 +161,10 @@ class WarungController extends Controller
             'data' => $warung
         ]);
     }
+    public function getwarung()
+{
+    $warung = Warung::all();
+
+    return response()->json($warung);
+}
 }

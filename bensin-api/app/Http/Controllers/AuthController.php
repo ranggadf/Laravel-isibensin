@@ -68,4 +68,32 @@ class AuthController extends Controller
         ]
     ], 200);
 }
+
+public function updateUser(Request $request)
+{
+    $user = $request->user();
+
+    $request->validate([
+        'nama' => 'required',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'password' => 'nullable|min:6',
+        'no_hp' => 'required'
+    ]);
+
+    $user->nama = $request->nama;
+    $user->email = $request->email;
+    $user->no_hp = $request->no_hp;
+
+    if ($request->password) {
+        $user->password = Hash::make($request->password);
+    }
+
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Profil berhasil diperbarui',
+        'data' => $user
+    ]);
+}
 }
