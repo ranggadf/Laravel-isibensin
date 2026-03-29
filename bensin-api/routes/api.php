@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\Admin\PelangganController;
 use App\Http\Controllers\Admin\PemilikController;
 use App\Http\Controllers\Admin\PersebaranWarungController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,4 +82,15 @@ Route::prefix('admin')->group(function () {
     // Persebaran Warung
     Route::apiResource('persebaran', PersebaranWarungController::class);
 
+});
+
+// 🔥 ROUTES PESANAN (OrderController)
+
+Route::middleware('auth:sanctum')->group(function () {
+
+   Route::get('/orders', [OrderController::class, 'index']);
+Route::get('/my-orders', [OrderController::class, 'myOrders']);
+Route::get('/owner/orders', [OrderController::class, 'ownerOrders']);
+Route::post('/orders', [OrderController::class, 'store']);
+Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 });
