@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
-{
-    protected $fillable = [
-        'user_id',
-        'warung_id',
-        'total_harga',
-        'ongkir',
-        'jarak',
-        'status'
-    ];
+{protected $fillable = [
+    'user_id',
+    'warung_id',
+    'total_harga',
+    'ongkir',
+    'jarak',
+    'status',
+    'lat',   // ✅ latitude customer
+    'lng',   // ✅ longitude customer
+];
 
     // relasi ke item
     public function items()

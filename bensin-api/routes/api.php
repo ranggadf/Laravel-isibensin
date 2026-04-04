@@ -93,4 +93,11 @@ Route::get('/my-orders', [OrderController::class, 'myOrders']);
 Route::get('/owner/orders', [OrderController::class, 'ownerOrders']);
 Route::post('/orders', [OrderController::class, 'store']);
 Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+Route::get('/owner/orders/{order}', [OrderController::class, 'show']);
+
 });
+// Riwayat Owner
+Route::get('/owner/riwayat', [OrderController::class, 'riwayatOwner'])->middleware('auth:sanctum');
+
+// Riwayat Customer
+Route::get('/customer/riwayat', [OrderController::class, 'riwayatCustomer'])->middleware('auth:sanctum');

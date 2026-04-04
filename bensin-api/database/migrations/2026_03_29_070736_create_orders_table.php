@@ -11,16 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('orders', function (Blueprint $table) {
-    $table->id();
-    $table->unsignedBigInteger('user_id');
-    $table->unsignedBigInteger('warung_id');
-    $table->integer('total_harga');
-    $table->integer('ongkir')->nullable();
-    $table->float('jarak')->nullable();
-    $table->string('status')->default('pending');
-    $table->timestamps();
-});
+        Schema::table('orders', function (Blueprint $table) {
+            $table->decimal('lat', 10, 7)->nullable();
+            $table->decimal('lng', 10, 7)->nullable();
+        });
     }
 
     /**
@@ -28,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn(['lat', 'lng']);
+        });
     }
 };

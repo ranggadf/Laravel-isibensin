@@ -12,77 +12,73 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     // ✅ 1. SIMPAN PESANAN (CHECKOUT)
-    public function store(Request $request)
+   public function store(Request $request)
 {
     $user = Auth::user();
 
+    // ✅ VALIDASI INPUT
     $request->validate([
-        'warung_id' => 'required',
-        'total_harga' => 'required',
-        'items' => 'required|array'
+        'warung_id'   => 'required|exists:warungs,id',
+        'total_harga' => 'required|numeric',
+        'items'       => 'required|array',
+        'lat'         => 'required|numeric',
+        'lng'         => 'required|numeric',
     ]);
 
     DB::beginTransaction();
 
     try {
-
         $warung = Warung::findOrFail($request->warung_id);
 
+        // ✅ SIMPAN PESANAN
         $order = Order::create([
-            'user_id' => $user->id,
-            'warung_id' => $warung->id,
-            'total_harga' => $request->total_harga,
-            'ongkir' => $request->ongkir ?? 0,
-            'jarak' => $request->jarak ?? 0,
-            'status' => 'pending'
+            'user_id'      => $user->id,
+            'warung_id'    => $warung->id,
+            'total_harga'  => $request->total_harga,
+            'ongkir'       => $request->ongkir ?? 0,
+            'jarak'        => $request->jarak ?? 0,
+            'status'       => 'pending',
+            'lat'          => $request->lat,
+            'lng'          => $request->lng,
         ]);
 
+        // ✅ SIMPAN ITEM & KURANGI STOK
         foreach ($request->items as $item) {
-
             $jenis = strtolower($item['jenis_bbm']); // pertalite / pertamax
             $qty = $item['qty'];
 
-            // 🔥 CEK & KURANGI STOK SESUAI JENIS
             if ($jenis === 'pertalite') {
-
                 if ($warung->stok_pertalite < $qty) {
                     throw new \Exception("Stok Pertalite tidak cukup");
                 }
-
                 $warung->stok_pertalite -= $qty;
-
             } elseif ($jenis === 'pertamax') {
-
                 if ($warung->stok_pertamax < $qty) {
                     throw new \Exception("Stok Pertamax tidak cukup");
                 }
-
                 $warung->stok_pertamax -= $qty;
             }
 
-            // simpan item
             OrderItem::create([
                 'order_id' => $order->id,
-                'jenis_bbm' => $item['jenis_bbm'],
-                'qty' => $qty,
-                'harga' => $item['harga'],
+                'jenis_bbm'=> $item['jenis_bbm'],
+                'qty'      => $qty,
+                'harga'    => $item['harga'],
             ]);
         }
 
-        // 🔥 SAVE SEKALI (lebih efisien)
+        // 🔥 SIMPAN PERUBAHAN STOK SEKALI
         $warung->save();
 
         DB::commit();
 
         return response()->json([
-            'message' => 'Pesanan berhasil dibuat',
+            'message'  => 'Pesanan berhasil dibuat',
             'order_id' => $order->id
         ], 201);
 
     } catch (\Exception $e) {
-
         DB::rollBack();
-
         return response()->json([
             'message' => $e->getMessage()
         ], 400);
@@ -126,9 +122,9 @@ class OrderController extends Controller
 {
     $order = Order::findOrFail($id);
 
-    $request->validate([
-        'status' => 'required|in:pending,dikonfirmasi,ditolak,diproses,selesai'
-    ]);
+   $request->validate([
+    'status' => 'required|in:pending,ditolak,dikonfirmasi,sedang diantar,selesai',
+]);
 
     $order->update([
         'status' => $request->status
@@ -144,5 +140,51 @@ class OrderController extends Controller
     return Order::with(['items', 'warung'])
         ->latest()
         ->get();
+}
+
+// 🔹 Riwayat Pesanan Owner
+public function riwayatOwner()
+{
+    $user = Auth::user();
+    $warung = Warung::where('user_id', $user->id)->first();
+
+    if (!$warung) {
+        return response()->json([
+            'message' => 'Warung tidak ditemukan'
+        ], 404);
+    }
+
+    $riwayat = Order::where('warung_id', $warung->id)
+        ->whereIn('status', ['ditolak','dikonfirmasi','sedang diantar','selesai'])
+        ->with(['items','user'])
+        ->latest()
+        ->get();
+
+    return response()->json($riwayat);
+}
+
+// 🔹 Riwayat Pesanan Customer
+public function riwayatCustomer()
+{
+    $riwayat = Order::where('user_id', Auth::id())
+        ->whereIn('status', ['ditolak','dikonfirmasi','sedang diantar','selesai'])
+        ->with(['items','warung'])
+        ->latest()
+        ->get();
+
+    return response()->json($riwayat);
+}
+
+public function show(Order $order)
+{
+    // Cek apakah pesanan milik owner
+  if ($order->warung->user_id !== auth()->id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    // Load relasi
+    $order->load(['user', 'items', 'warung']);
+
+    return response()->json($order);
 }
 }
