@@ -84,6 +84,16 @@ Route::prefix('admin')->group(function () {
 
 });
 
+// 🔥 ROUTES CART (CartController)
+use App\Http\Controllers\CartController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart', [CartController::class, 'store']);
+    Route::delete('/cart/{id}', [CartController::class, 'destroy']);
+    Route::delete('/cart-clear', [CartController::class, 'clear']);
+});
+
 // 🔥 ROUTES PESANAN (OrderController)
 
 Route::middleware('auth:sanctum')->group(function () {
