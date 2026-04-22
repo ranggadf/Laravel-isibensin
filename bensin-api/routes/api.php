@@ -104,6 +104,7 @@ Route::get('/owner/orders', [OrderController::class, 'ownerOrders']);
 Route::post('/orders', [OrderController::class, 'store']);
 Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 Route::get('/owner/orders/{order}', [OrderController::class, 'show']);
+Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
 });
 // Riwayat Owner

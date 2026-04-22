@@ -13,4 +13,9 @@ class Cart extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    public function warung()
+{
+    return $this->belongsTo(Warung::class);
+}
 }

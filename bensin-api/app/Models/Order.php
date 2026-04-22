@@ -13,7 +13,8 @@ class Order extends Model
     'jarak',
     'status',
     'lat',   // ✅ latitude customer
-    'lng',   // ✅ longitude customer
+    'lng',
+    'expired_at',   // ✅ longitude customer
 ];
 
     // relasi ke item
