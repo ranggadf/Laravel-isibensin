@@ -98,14 +98,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-   Route::get('/orders', [OrderController::class, 'index']);
-Route::get('/my-orders', [OrderController::class, 'myOrders']);
-Route::get('/owner/orders', [OrderController::class, 'ownerOrders']);
-Route::post('/orders', [OrderController::class, 'store']);
-Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
-Route::get('/owner/orders/{order}', [OrderController::class, 'show']);
-Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+    // ORDER
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/my-orders', [OrderController::class, 'myOrders']);
 
+    // OWNER
+    Route::get('/owner/orders', [OrderController::class, 'ownerOrders']);
+    Route::get('/owner/pendapatan', [OrderController::class, 'pendapatanOwner']);
+
+    // DETAIL ORDER OWNER
+    Route::get('/owner/orders/{order}', [OrderController::class, 'show']);
+
+    // CREATE ORDER
+    Route::post('/orders', [OrderController::class, 'store']);
+
+    // UPDATE STATUS
+    Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+
+    // DELETE ORDER
+    Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 });
 // Riwayat Owner
 Route::get('/owner/riwayat', [OrderController::class, 'riwayatOwner'])->middleware('auth:sanctum');

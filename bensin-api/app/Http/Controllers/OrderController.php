@@ -130,10 +130,11 @@ class OrderController extends Controller
             ->update(['status' => 'expired']);
 
         // ambil semua order user
-        return Order::where('user_id', Auth::id())
-            ->with(['items', 'warung'])
-            ->latest()
-            ->get();
+       return Order::where('user_id', Auth::id())
+    ->where('hapus_dari_pelanggan', false) // ✅ FIX
+    ->with(['items', 'warung'])
+    ->latest()
+    ->get();
     }
 
     // =====================
@@ -154,14 +155,16 @@ class OrderController extends Controller
 
         // auto expire untuk owner
         Order::where('warung_id', $warung->id)
+            ->where('hapus_riwayat_owner', false)
             ->where('status', 'pending')
             ->where('expired_at', '<=', now())
             ->update(['status' => 'expired']);
 
         return Order::where('warung_id', $warung->id)
-            ->with(['items', 'warung', 'user'])
-            ->latest()
-            ->get();
+    ->where('hapus_dari_owner', false) // ✅ FIX
+    ->with(['items', 'warung', 'user'])
+    ->latest()
+    ->get();
     }
 
     // =====================
@@ -199,6 +202,7 @@ class OrderController extends Controller
         }
 
         return Order::where('warung_id', $warung->id)
+            ->where('hapus_dari_owner', false) // ✅ FIX
             ->whereIn('status', [
                 'selesai',
                 'ditolak',
@@ -216,6 +220,7 @@ class OrderController extends Controller
     public function riwayatCustomer()
     {
         return Order::where('user_id', Auth::id())
+            ->where('hapus_dari_pelanggan', false) // ✅ FIX
             ->whereIn('status', [
                 'expired',
                 'dikonfirmasi',
@@ -243,13 +248,63 @@ class OrderController extends Controller
     // =====================
     // 8. HAPUS ORDER
     // =====================
-    public function destroy($id)
-    {
-        $order = Order::findOrFail($id);
-        $order->delete();
+   public function destroy($id)
+{
+    $order = Order::findOrFail($id);
+    $user = Auth::user();
 
+    $warung = Warung::where('user_id', $user->id)->first();
+
+    if ($warung && $order->warung_id == $warung->id) {
+        // OWNER
+        $order->hapus_dari_owner = true;
+    } else {
+        // CUSTOMER
+        if ($order->user_id != $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $order->hapus_dari_pelanggan = true;
+    }
+
+    $order->save();
+
+    // hapus permanen kalau dua-duanya sudah hapus
+    if ($order->hapus_dari_owner && $order->hapus_dari_pelanggan) {
+        $order->delete();
+    }
+
+    return response()->json([
+        'message' => 'Riwayat berhasil dihapus'
+    ]);
+}
+
+public function pendapatanOwner()
+{
+    $user = Auth::user();
+
+    // cari warung milik owner
+    $warung = Warung::where('user_id', $user->id)->first();
+
+    if (!$warung) {
         return response()->json([
-            'message' => 'Pesanan berhasil dihapus'
+            'total_pendapatan' => 0
         ]);
     }
+
+    // hitung total pendapatan dari order selesai
+    $totalPendapatan = Order::where('warung_id', $warung->id)
+        ->where('status', 'selesai')
+        ->sum('total_harga');
+
+    // hitung jumlah pesanan selesai
+    $totalPesanan = Order::where('warung_id', $warung->id)
+        ->where('status', 'selesai')
+        ->count();
+
+    return response()->json([
+        'total_pendapatan' => $totalPendapatan,
+        'total_pesanan' => $totalPesanan,
+    ]);
+}
 }

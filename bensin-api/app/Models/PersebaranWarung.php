@@ -12,6 +12,7 @@ class PersebaranWarung extends Model
         'nama_warung',
         'lat',
         'long',
-        'foto_warung'
+        'foto_warung',
+        'alamat_warung',
     ];
 }

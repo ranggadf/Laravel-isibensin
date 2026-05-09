@@ -15,6 +15,8 @@ class Order extends Model
     'lat',   // ✅ latitude customer
     'lng',
     'expired_at',   // ✅ longitude customer
+    'hapus_dari_pelanggan', // untuk customer
+    'hapus_dari_owner',     // untuk owner
 ];
 
     // relasi ke item

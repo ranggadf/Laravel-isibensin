@@ -26,12 +26,14 @@ class PersebaranWarungController extends Controller
             'nama_warung' => 'required|string|max:255',
             'lat' => 'required',
             'long' => 'required',
+            'alamat_warung' => 'nullable|string',
         ]);
 
         $warung = PersebaranWarung::create([
             'nama_warung' => $request->nama_warung,
             'lat' => $request->lat,
             'long' => $request->long,
+            'alamat_warung' => $request->alamat_warung,
         ]);
 
         return response()->json([
@@ -60,12 +62,14 @@ class PersebaranWarungController extends Controller
             'nama_warung' => 'required|string|max:255',
             'lat' => 'required',
             'long' => 'required',
+            'alamat_warung' => 'nullable|string',
         ]);
 
         $warung->update([
             'nama_warung' => $request->nama_warung,
             'lat' => $request->lat,
             'long' => $request->long,
+            'alamat_warung' => $request->alamat_warung,
         ]);
 
         return response()->json([
