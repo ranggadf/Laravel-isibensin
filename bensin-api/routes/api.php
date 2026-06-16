@@ -23,8 +23,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
 Route::post('/admin/register', [AdminAuthController::class, 'register']);
 
-// Data warung bisa diakses customer tanpa login
+
 Route::get('/warung', [WarungController::class, 'getwarung']);
+Route::get('/admin/data-warung', [WarungController::class, 'getWarungAdmin']);
 
 
 /*
@@ -109,6 +110,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // DETAIL ORDER OWNER
     Route::get('/owner/orders/{order}', [OrderController::class, 'show']);
 
+    // DETAIL ORDER CUSTOMER
+    Route::get('/admin/pelanggan/{id}/pesanan',[OrderController::class, 'pesananByCustomer']);
+
+    // DETAIL ORDER OWNER
+    Route::get('/admin/pemilik/{id}/pesanan', [OrderController::class, 'pesananByOwner']);
+
+
     // CREATE ORDER
     Route::post('/orders', [OrderController::class, 'store']);
 
@@ -123,3 +131,8 @@ Route::get('/owner/riwayat', [OrderController::class, 'riwayatOwner'])->middlewa
 
 // Riwayat Customer
 Route::get('/customer/riwayat', [OrderController::class, 'riwayatCustomer'])->middleware('auth:sanctum');
+
+Route::middleware('auth:sanctum')->post(
+    '/save-expo-token',
+    [AuthController::class, 'saveExpoToken']
+);

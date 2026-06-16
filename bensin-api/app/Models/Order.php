@@ -17,6 +17,7 @@ class Order extends Model
     'expired_at',   // ✅ longitude customer
     'hapus_dari_pelanggan', // untuk customer
     'hapus_dari_owner',     // untuk owner
+    'no_hp', // tambahkan no_hp
 ];
 
     // relasi ke item

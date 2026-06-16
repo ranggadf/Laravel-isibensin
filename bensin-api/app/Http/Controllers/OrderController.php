@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // ambil user login
 use App\Models\Warung;      // data warung (stok BBM)
 use Illuminate\Support\Facades\DB;   // transaksi database
+use Illuminate\Support\Facades\Http;
+use App\Models\TokenNotifikasi;
+
 
 class OrderController extends Controller
 {
@@ -52,6 +55,7 @@ class OrderController extends Controller
             $order = Order::create([
                 'user_id'     => $user->id,
                 'warung_id'   => $warung->id,
+                 'no_hp'       => $user->no_hp,
                 'total_harga' => $request->total_harga,
                 'ongkir'      => $request->ongkir ?? 0,
                 'jarak'       => $request->jarak ?? 0,
@@ -98,13 +102,58 @@ class OrderController extends Controller
             // simpan perubahan stok warung
             $warung->save();
 
-            // commit transaksi (berhasil semua)
-            DB::commit();
+           // commit transaksi (berhasil semua)
+// commit transaksi
+DB::commit();
 
-            return response()->json([
-                'message'  => 'Pesanan berhasil dibuat',
-                'order_id' => $order->id
-            ], 201);
+try {
+
+    $tokenOwner = TokenNotifikasi::where(
+        'user_id',
+        $warung->user_id
+    )->first();
+    \Log::info('TOKEN OWNER', [
+    'user_id' => $warung->user_id,
+    'token' => $tokenOwner?->expo_token,
+]);
+
+    if ($tokenOwner && $tokenOwner->expo_token) {
+
+   $response = Http::timeout(10)->post(
+    'https://exp.host/--/api/v2/push/send',
+    [
+        'to' => $tokenOwner->expo_token,
+
+        'title' => 'Pesanan Baru',
+
+        'body' => 'Ada pesanan masuk!',
+
+        // 🔥 GANTI DULU
+        'sound' => 'default',
+
+        'priority' => 'high',
+
+        'channelId' => 'default',
+
+        'data' => [
+            'order_id' => $order->id,
+        ],
+    ]
+);
+
+\Log::info('EXPO RESPONSE', [
+    'response' => $response->json(),
+]);
+    }
+
+} catch (\Exception $e) {
+
+    \Log::error('Notif gagal: ' . $e->getMessage());
+}
+return response()->json([
+    'message'  => 'Pesanan berhasil dibuat',
+    'order_id' => $order->id
+], 201);
 
         } catch (\Exception $e) {
 
@@ -154,11 +203,11 @@ class OrderController extends Controller
         }
 
         // auto expire untuk owner
-        Order::where('warung_id', $warung->id)
-            ->where('hapus_riwayat_owner', false)
-            ->where('status', 'pending')
-            ->where('expired_at', '<=', now())
-            ->update(['status' => 'expired']);
+       Order::where('warung_id', $warung->id)
+    ->where('hapus_dari_owner', false)
+    ->where('status', 'pending')
+    ->where('expired_at', '<=', now())
+    ->update(['status' => 'expired']);
 
         return Order::where('warung_id', $warung->id)
     ->where('hapus_dari_owner', false) // ✅ FIX
@@ -303,6 +352,51 @@ public function pendapatanOwner()
         ->count();
 
     return response()->json([
+        'total_pendapatan' => $totalPendapatan,
+        'total_pesanan' => $totalPesanan,
+    ]);
+}
+
+// =====================
+// 9. DETAIL PESANAN CUSTOMER UNTUK ADMIN
+// =====================
+public function pesananByCustomer($id)
+{
+    $orders = Order::where('user_id', $id)
+        ->with(['items', 'warung'])
+        ->latest()
+        ->get();
+
+    return response()->json($orders);
+}
+
+public function pesananByOwner($id)
+{
+    $warung = Warung::where('user_id', $id)->first();
+
+    if (!$warung) {
+        return response()->json([
+            'orders' => [],
+            'total_pendapatan' => 0,
+            'total_pesanan' => 0,
+        ]);
+    }
+
+    $orders = Order::where('warung_id', $warung->id)
+        ->with(['items', 'user'])
+        ->latest()
+        ->get();
+
+    $totalPendapatan = Order::where('warung_id', $warung->id)
+        ->where('status', 'selesai')
+        ->sum('total_harga');
+
+    $totalPesanan = Order::where('warung_id', $warung->id)
+        ->where('status', 'selesai')
+        ->count();
+
+    return response()->json([
+        'orders' => $orders,
         'total_pendapatan' => $totalPendapatan,
         'total_pesanan' => $totalPesanan,
     ]);

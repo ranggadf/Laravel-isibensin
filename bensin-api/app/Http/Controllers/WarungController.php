@@ -28,16 +28,20 @@ class WarungController extends Controller
     }
 
     $request->validate([
-        'nama_warung' => 'required',
-        'alamat' => 'required',
-        'latitude' => 'required',
-        'longitude' => 'required',
-        'stok_pertalite' => 'required|numeric',
-        'stok_pertamax' => 'required|numeric',
-        'harga_pertalite' => 'required|numeric',
-        'harga_pertamax' => 'required|numeric',
-        'foto' => 'nullable|image'
-    ]);
+    'nama_warung' => 'required',
+    'alamat' => 'required',
+
+    'latitude' => 'nullable',
+    'longitude' => 'nullable',
+
+    'stok_pertalite' => 'nullable|numeric',
+    'stok_pertamax' => 'nullable|numeric',
+
+    'harga_pertalite' => 'nullable|numeric',
+    'harga_pertamax' => 'nullable|numeric',
+
+    'foto' => 'nullable|image'
+]);
 
     $fotoPath = null;
 
@@ -52,8 +56,8 @@ class WarungController extends Controller
     'alamat' => $request->alamat,
     'latitude' => $request->latitude,
     'longitude' => $request->longitude,
-    'stok_pertalite' => $request->stok_pertalite,
-    'stok_pertamax' => $request->stok_pertamax,
+    'stok_pertalite' => $request->stok_pertalite ?? 0,
+'stok_pertamax' => $request->stok_pertamax ?? 0,
     'harga_pertalite' => $request->harga_pertalite,
     'harga_pertamax' => $request->harga_pertamax,
     'foto' => $fotoPath
@@ -86,15 +90,18 @@ class WarungController extends Controller
         return response()->json(['message' => 'Warung tidak ditemukan'], 404);
     }
 
-   $request->validate([
+ $request->validate([
     'nama_warung' => 'required',
     'alamat' => 'required',
     'latitude' => 'required',
     'longitude' => 'required',
-    'stok_pertalite' => 'required|numeric',
-    'stok_pertamax' => 'required|numeric',
-    'harga_pertalite' => 'required|numeric',
-    'harga_pertamax' => 'required|numeric',
+
+    'stok_pertalite' => 'nullable|numeric',
+    'stok_pertamax' => 'nullable|numeric',
+
+    'harga_pertalite' => 'nullable|numeric',
+    'harga_pertamax' => 'nullable|numeric',
+
     'foto' => 'nullable|image'
 ]);
 
@@ -103,8 +110,8 @@ class WarungController extends Controller
     $warung->alamat = $request->alamat;
     $warung->latitude = $request->latitude;
     $warung->longitude = $request->longitude;
-    $warung->stok_pertalite = $request->stok_pertalite;
-    $warung->stok_pertamax = $request->stok_pertamax;
+   $warung->stok_pertalite = $request->stok_pertalite ?? 0;
+$warung->stok_pertamax = $request->stok_pertamax ?? 0;
     $warung->harga_pertalite = $request->harga_pertalite;
     $warung->harga_pertamax = $request->harga_pertamax;
 
@@ -166,5 +173,36 @@ class WarungController extends Controller
     $warung = Warung::all();
 
     return response()->json($warung);
+}
+
+public function getWarungAdmin()
+{
+    $warung = Warung::with('user')->get();
+
+    return response()->json(
+        $warung->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'nama' => $item->user->name ?? '-',
+                'email' => $item->user->email ?? '-',
+                'no_hp' => $item->user->no_hp ?? '-',
+
+                'warung' => [
+                    'id' => $item->id,
+                    'nama_warung' => $item->nama_warung,
+                    'alamat' => $item->alamat,
+                    'stok_pertalite' => $item->stok_pertalite,
+                    'stok_pertamax' => $item->stok_pertamax,
+                    'harga_pertalite' => $item->harga_pertalite,
+                    'harga_pertamax' => $item->harga_pertamax,
+                    'latitude' => $item->latitude,
+                    'longitude' => $item->longitude,
+                    'foto' => $item->foto
+    ? asset('storage/' . $item->foto)
+    : null,
+                ]
+            ];
+        })
+    );
 }
 }

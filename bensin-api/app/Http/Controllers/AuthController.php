@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User; // Model User untuk akses tabel users
 use Illuminate\Http\Request; // Untuk menangkap request dari client
 use Illuminate\Support\Facades\Hash; // Untuk hashing password (keamanan)
+use App\Models\TokenNotifikasi;
 
 class AuthController extends Controller
 {
@@ -124,4 +125,26 @@ class AuthController extends Controller
             'data' => $user
         ]);
     }
+
+    public function saveExpoToken(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required',
+        'expo_token' => 'required'
+    ]);
+
+    TokenNotifikasi::updateOrCreate(
+        [
+            'user_id' => $request->user_id
+        ],
+        [
+            'expo_token' => $request->expo_token
+        ]
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Token saved'
+    ]);
+}
 }
