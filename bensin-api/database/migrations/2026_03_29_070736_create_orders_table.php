@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->decimal('lat', 10, 7)->nullable();
-            $table->decimal('lng', 10, 7)->nullable();
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+            $table->string('nama');
+
+            $table->string('alamat');
+
+            $table->timestamps();
         });
     }
 
