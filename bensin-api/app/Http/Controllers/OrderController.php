@@ -108,52 +108,55 @@ DB::commit();
 
 try {
 
+    // Cek warung dan owner yang akan dikirim notifikasi
+    \Log::info('WARUNG DATA', [
+        'warung_id' => $warung->id,
+        'owner_user_id' => $warung->user_id,
+    ]);
+
     $tokenOwner = TokenNotifikasi::where(
         'user_id',
         $warung->user_id
     )->first();
+
     \Log::info('TOKEN OWNER', [
-    'user_id' => $warung->user_id,
-    'token' => $tokenOwner?->expo_token,
-]);
+        'user_id' => $warung->user_id,
+        'token' => $tokenOwner?->expo_token,
+    ]);
 
     if ($tokenOwner && $tokenOwner->expo_token) {
 
-   $response = Http::timeout(10)->post(
-    'https://exp.host/--/api/v2/push/send',
-    [
-        'to' => $tokenOwner->expo_token,
+        $response = Http::timeout(10)->post(
+            'https://exp.host/--/api/v2/push/send',
+            [
+                'to' => $tokenOwner->expo_token,
+                'title' => 'Pesanan Baru',
+                'body' => 'Ada pesanan masuk!',
+                'sound' => 'alarm',
+                'priority' => 'high',
+                'channelId' => 'default',
+                'data' => [
+                    'order_id' => $order->id,
+                ],
+            ]
+        );
 
-        'title' => 'Pesanan Baru',
+        \Log::info('EXPO STATUS', [
+            'status' => $response->status(),
+            'body' => $response->body(),
+            'json' => $response->json(),
+        ]);
+    } else {
 
-        'body' => 'Ada pesanan masuk!',
+        \Log::warning('TOKEN OWNER TIDAK DITEMUKAN');
 
-        // 🔥 GANTI DULU
-        'sound' => 'default',
-
-        'priority' => 'high',
-
-        'channelId' => 'default',
-
-        'data' => [
-            'order_id' => $order->id,
-        ],
-    ]
-);
-
-\Log::info('EXPO RESPONSE', [
-    'response' => $response->json(),
-]);
     }
 
 } catch (\Exception $e) {
 
     \Log::error('Notif gagal: ' . $e->getMessage());
+
 }
-return response()->json([
-    'message'  => 'Pesanan berhasil dibuat',
-    'order_id' => $order->id
-], 201);
 
         } catch (\Exception $e) {
 
@@ -224,7 +227,7 @@ return response()->json([
         $order = Order::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:pending,expired,dikonfirmasi,sedang diantar,selesai',
+            'status' => 'required|in:pending,ditolak,expired,dikonfirmasi,sedang diantar,selesai',
         ]);
 
         $order->update([

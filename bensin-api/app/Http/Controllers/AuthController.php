@@ -126,8 +126,13 @@ class AuthController extends Controller
         ]);
     }
 
-    public function saveExpoToken(Request $request)
+  public function saveExpoToken(Request $request)
 {
+    \Log::info('SAVE EXPO TOKEN', [
+        'user_id' => $request->user_id,
+        'expo_token' => $request->expo_token,
+    ]);
+
     $request->validate([
         'user_id' => 'required',
         'expo_token' => 'required'
