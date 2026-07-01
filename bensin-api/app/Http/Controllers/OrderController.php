@@ -404,4 +404,31 @@ public function pesananByOwner($id)
         'total_pesanan' => $totalPesanan,
     ]);
 }
+
+public function updateTracking(Request $request, Order $order)
+{
+    $request->validate([
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+    ]);
+
+    $order->owner_lat = $request->latitude;
+    $order->owner_lng = $request->longitude;
+    $order->save();
+
+    return response()->json([
+        'message' => 'Tracking berhasil diperbarui'
+    ]);
+}
+
+public function getTracking(Order $order)
+{
+    return response()->json([
+        'owner_lat' => $order->owner_lat,
+        'owner_lng' => $order->owner_lng,
+        'customer_lat' => $order->lat,
+        'customer_lng' => $order->lng,
+        'status' => $order->status,
+    ]);
+}
 }

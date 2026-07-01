@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart', [CartController::class, 'store']);
     Route::delete('/cart/{id}', [CartController::class, 'destroy']);
     Route::delete('/cart-clear', [CartController::class, 'clear']);
+    Route::post('/cart/remove-selected', [CartController::class, 'removeSelected']);
 });
 
 // 🔥 ROUTES PESANAN (OrderController)
@@ -125,6 +126,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // DELETE ORDER
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+    // Update posisi owner
+Route::post('/owner/orders/{order}/tracking', [OrderController::class, 'updateTracking']);
+
+// Ambil posisi tracking untuk customer
+Route::get('/customer/orders/{order}/tracking', [OrderController::class, 'getTracking']);
 });
 // Riwayat Owner
 Route::get('/owner/riwayat', [OrderController::class, 'riwayatOwner'])->middleware('auth:sanctum');

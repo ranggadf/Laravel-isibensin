@@ -78,4 +78,29 @@ class CartController extends Controller
             'message' => 'Cart dikosongkan'
         ]);
     }
+
+
+    public function removeSelected(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'integer'
+    ]);
+
+    $cart = Cart::where('user_id', $request->user()->id)->first();
+
+    if (!$cart) {
+        return response()->json([
+            'message' => 'Cart tidak ditemukan'
+        ], 404);
+    }
+
+    CartItem::where('cart_id', $cart->id)
+        ->whereIn('id', $request->ids)
+        ->delete();
+
+    return response()->json([
+        'message' => 'Item checkout berhasil dihapus dari cart'
+    ]);
+}
 }

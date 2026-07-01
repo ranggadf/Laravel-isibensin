@@ -12,14 +12,15 @@ class Order extends Model
     'ongkir',
     'jarak',
     'status',
-    'lat',   // ✅ latitude customer
+    'lat',
     'lng',
-    'expired_at',   // ✅ longitude customer
-    'hapus_dari_pelanggan', // untuk customer
-    'hapus_dari_owner',     // untuk owner
-    'no_hp', // tambahkan no_hp
+    'owner_lat',
+    'owner_lng',
+    'expired_at',
+    'hapus_dari_pelanggan',
+    'hapus_dari_owner',
+    'no_hp',
 ];
-
     // relasi ke item
     public function items()
     {
